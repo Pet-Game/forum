@@ -8,8 +8,9 @@ using PetGameForum.Data;
 namespace PetGameForum.Pages.Forum; 
 
 public class ThreadModel : PageModel {
-	public UserManager<User> UserManager { get; }
-	public ForumService ForumService { get; }
+	public readonly UserManager<User> UserManager;
+	public readonly ForumService ForumService;
+	public readonly IConfiguration  Config;
 	
 	public ForumThread Thread;
 	public List<ForumPost> Posts;
@@ -17,9 +18,10 @@ public class ThreadModel : PageModel {
 	[BindProperty] 
 	public ForumPost NewPost { get; set; }
 
-	public ThreadModel(ForumService forumService, UserManager<User> userManager) {
+	public ThreadModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config) {
 		ForumService = forumService;
 		UserManager = userManager;
+		Config = config;
 	}
 	
 	public async Task<IActionResult> OnGet(string id) {
@@ -29,11 +31,13 @@ public class ThreadModel : PageModel {
 
 	public async Task<IActionResult> OnPostAsync(string id) {
 		if (!await FindThread(id) || !await FindPosts()) return NotFound();
+		if(!ValidatePost(NewPost.UserInput)) return Redirect(Request.Path); //todo: error comm & clientside
+		var compiledText = CompilePost(NewPost.UserInput);
+		if(string.IsNullOrEmpty(compiledText)) return Redirect(Request.Path); //todo: error comm
 		
 		NewPost.Author = ForumPostAuthor.FromUser(await UserManager.GetUserAsync(User));
-		NewPost.CompiledContent = NewPost.UserInput;
+		NewPost.CompiledContent = compiledText;
 		NewPost.Thread = Thread.Id;
-		//todo: better validation
 		await ForumService.CreatePost(NewPost);
 		return Redirect(Request.Path);
 	}
@@ -50,5 +54,17 @@ public class ThreadModel : PageModel {
 	private async Task<bool> FindPosts() {
 		Posts = (await ForumService.GetPostsOfThread(Thread.Id)).ToList();
 		return true;
+	}
+
+	private bool ValidatePost(string userInput) {
+		if (string.IsNullOrWhiteSpace(userInput)) return false;
+		if (userInput.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxPostLength")) 
+			return false; //todo: clientside validation
+		return true;
+	}
+	
+	private string? CompilePost(string userInput) {
+		//ASPNET does all html encoding for us already
+		return userInput;
 	}
 }

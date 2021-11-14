@@ -8,23 +8,27 @@ namespace PetGameForum.Pages;
 
 public class ForumHubModel : PageModel {
 	public readonly ForumService ForumService;
-	public List<ForumThread> Threads;
-	private readonly UserManager<User> userManager;
+	public readonly UserManager<User> UserManager;
+	public readonly IConfiguration  Config;
 	
 	[BindProperty]
 	public ForumThread NewThread { get; set; }
 
-	public ForumHubModel(ForumService forumService, UserManager<User> userManager) {
-		this.ForumService = forumService;
-		this.userManager = userManager;
+	public ForumHubModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config) {
+		ForumService = forumService;
+		UserManager = userManager;
+		Config = config;
 	}
-	
+
 	public async Task OnGet() {
-		
+		// :)
 	}
 
 	public async Task<IActionResult> OnPostAsync() {
-		NewThread.Author = ForumThreadAuthor.FromUser(await userManager.GetUserAsync(User));
+		if(string.IsNullOrWhiteSpace(NewThread.Topic) || 
+				NewThread.Topic.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxThreadNameLength"))
+			return Redirect(Request.Path); //todo: error communication and clientside validation
+		NewThread.Author = ForumThreadAuthor.FromUser(await UserManager.GetUserAsync(User));
 		await ForumService.CreateThread(NewThread);
 		return Redirect(Request.Path); //redirect to self makes it a get request again and reloading doesnt post again
 	}

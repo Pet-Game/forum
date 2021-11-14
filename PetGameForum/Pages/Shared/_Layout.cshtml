@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="stylesheet" href="~/PetGameForum.styles.css" asp-append-version="true"/>
 </head>
-<body>
+
+@{
+    var bodyStyle = "";
+    if (ViewData.TryGetValue("StaticBackground", out var bgUrl)) {
+        bodyStyle = $"background-image: url({bgUrl}); background-size: cover;";
+    }
+}
+<body style="@bodyStyle">
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container">
@@ -34,7 +41,7 @@
         </div>
     </nav>
 </header>
-<div class="container">
+<div class="container" style="background-color: rgba(255,255,255,0.4);">
     <main role="main" class="pb-3">
         @RenderBody()
     </main>

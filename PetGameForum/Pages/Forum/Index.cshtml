@@ -19,7 +19,7 @@
         <tr>
             <td><a class="nav-link" asp-area="" asp-page="/Forum/Thread" asp-route-id="@thread.Id">@thread.Topic</a></td>
             <td>@thread.Author.Name</td>
-            <td>@thread.Id.CreationTime.ToString("MMMM dd. yy")</td>
+            <td>@thread.Id.CreationTime.ToString("MMMM dd yyyy")</td> <!-- todo: clientside time -->
         </tr>
         }
     </tbody>
