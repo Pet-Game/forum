@@ -1,0 +1,33 @@
+﻿@page
+@using MongoDB.Driver
+@model PetGameForum.Pages.ForumHubModel
+@inject SignInManager<User> SignInManager
+
+@{
+    ViewData["Title"] = "Forum";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Forum Stuff</h1>
+</div>
+<table class="forum-threadlist">
+    <thead>
+        <tr><th>Topic</th><th>Author</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+        @foreach (ForumThread thread in (await Model.ForumService.GetAllThreads()).ToList()) {
+        <tr>
+            <td><a class="nav-link" asp-area="" asp-page="/Forum/Thread" asp-route-id="@thread.Id">@thread.Topic</a></td>
+            <td>@thread.Author.Name</td>
+            <td>@thread.Id.CreationTime.ToString("MMMM dd. yy")</td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+@if (SignInManager.IsSignedIn(User)) {
+<form method="post" style="display: flex">
+    <input asp-for="NewThread.Topic" class="form-control"/>
+    <input type="submit" value="Create Thread" class="btn btn-primary"/>
+</form>
+}

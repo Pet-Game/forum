@@ -16,3 +16,18 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.forum-threadlist {
+  width: 100%;
+}
+
+.post-user {
+  width: 200px;
+  vertical-align: top;
+}
+
+.post-timestamp {
+  text-align: right;
+  color: grey;
+  font-size: 10px;
+}

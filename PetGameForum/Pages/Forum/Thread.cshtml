@@ -1,0 +1,30 @@
+﻿@page "{id}"
+@model PetGameForum.Pages.Forum.ThreadModel
+@inject SignInManager<User> SignInManager
+
+@{
+    ViewData["Title"] = Model.Thread.Topic;
+}
+
+<h2>@Model.Thread.Topic</h2>
+<p>by <b>@Model.Thread.Author.Name</b></p>
+
+<table class="forum-threadlist">
+    @foreach (var post in Model.Posts) {
+        <tr>
+            <td class="post-user">@post.Author.Name</td>
+            <td>
+                <p>@post.CompiledContent</p>
+                <p class="post-timestamp">Posted @post.Id.CreationTime.ToString("HH:mm, MMMM dd yyyy")</p>
+            </td>
+        </tr>
+    }
+</table>
+
+@if (SignInManager.IsSignedIn(User)) {
+<p>New Post:</p>
+<form method="post" style="display: flex">
+    <input asp-for="NewPost.UserInput" class="form-control"/>
+    <input type="submit" value="Post" class="btn btn-primary" />
+</form>
+}

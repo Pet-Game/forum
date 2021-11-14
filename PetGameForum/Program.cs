@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using MongoDbGenericRepository;
@@ -10,13 +11,18 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 var dbClient = new MongoClient(connectionString);
 var identityDbContext = new MongoDbContext(dbClient, "identity");
 
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<User>(options => {
+		options.SignIn.RequireConfirmedAccount = false;
+		options.User.RequireUniqueEmail = true;
+		options.Lockout.AllowedForNewUsers = false;
+	})
 	.AddRoles<Role>()
 	.AddMongoDbStores<IMongoDbContext>(identityDbContext)
 	.AddDefaultTokenProviders();
 
-builder.Services.AddScoped<MongoClient>();
-	
+builder.Services.AddSingleton<MongoClient>(dbClient);
+builder.Services.AddScoped<ForumService>();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
