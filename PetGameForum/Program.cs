@@ -1,8 +1,12 @@
 
+using System.Security.Claims;
+using AspNetCore.Identity.MongoDbCore.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
 using MongoDbGenericRepository;
 using PetGameForum.Data;
+using PetGameForum.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +26,34 @@ builder.Services.AddDefaultIdentity<User>(options => {
 
 builder.Services.AddSingleton<MongoClient>(dbClient);
 builder.Services.AddScoped<ForumService>();
+builder.Services.AddScoped<RoleService>();
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 builder.Services.AddRazorPages();
 
-var app = builder.Build();
+var app = builder.Build(); 
+
+{
+	using var scope = app.Services.CreateScope();
+	var roleManager = scope.ServiceProvider.GetService<RoleManager<Role>>();
+	var role = new Role() {
+		Name = "Admin",
+	};
+	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.SeeModeratorArea)));
+	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.EditRoles)));
+	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.AssignRoles)));
+	await roleManager.CreateAsync(role);
+}
+
+{
+	using var scope = app.Services.CreateScope();
+	var userManager = scope.ServiceProvider.GetService<UserManager<User>>();
+	var roleManager = scope.ServiceProvider.GetService<RoleManager<Role>>();
+	var user = await userManager.FindByEmailAsync("cool@cool");
+	user.AddRole((await roleManager.FindByNameAsync("Admin")).Id);
+	await userManager.UpdateAsync(user);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {

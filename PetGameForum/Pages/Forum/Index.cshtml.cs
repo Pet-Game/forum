@@ -12,7 +12,7 @@ public class ForumHubModel : PageModel {
 	public readonly IConfiguration  Config;
 	
 	[BindProperty]
-	public ForumThread NewThread { get; set; }
+	public string Topic { get; set; }
 
 	public ForumHubModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config) {
 		ForumService = forumService;
@@ -20,16 +20,19 @@ public class ForumHubModel : PageModel {
 		Config = config;
 	}
 
-	public async Task OnGet() {
+	public void OnGet() {
 		// :)
 	}
 
 	public async Task<IActionResult> OnPostAsync() {
-		if(string.IsNullOrWhiteSpace(NewThread.Topic) || 
-				NewThread.Topic.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxThreadNameLength"))
+		if(string.IsNullOrWhiteSpace(Topic) || 
+				Topic.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxThreadNameLength"))
 			return Redirect(Request.Path); //todo: error communication and clientside validation
-		NewThread.Author = ForumThreadAuthor.FromUser(await UserManager.GetUserAsync(User));
-		await ForumService.CreateThread(NewThread);
+		var newThread = new ForumThread {
+			Author = ForumThreadAuthor.FromUser(await UserManager.GetUserAsync(User)),
+			Topic = Topic,
+		};
+		await ForumService.CreateThread(newThread);
 		return Redirect(Request.Path); //redirect to self makes it a get request again and reloading doesnt post again
 	}
 }

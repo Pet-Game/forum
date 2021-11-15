@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable> <!--doesnt vibe well with razor stuff ^^-->
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>aspnet-PetGameForum-E553BFEB-2CE4-4B91-916F-C822371C04F9</UserSecretsId>
     </PropertyGroup>

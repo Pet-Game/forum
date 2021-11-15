@@ -1,0 +1,20 @@
+﻿@page
+@using PetGameForum.Services
+@model PetGameForum.Pages.Moderation.ModerationIndexModel
+@inject RoleService roleService
+
+@{
+    ViewData["Title"] = "Moderation";
+}
+
+<ul>
+    <li>
+        <a class="nav-link" asp-area="" asp-page="/Moderation/Roles">Roles</a>
+    </li>
+    <li>
+        <a class="nav-link" asp-area="" asp-page="/Moderation/Users">Users</a>
+    </li>
+    <li>
+        Todo: Other stuff!
+    </li>
+</ul>

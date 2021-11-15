@@ -16,7 +16,7 @@ public class ThreadModel : PageModel {
 	public List<ForumPost> Posts;
 
 	[BindProperty] 
-	public ForumPost NewPost { get; set; }
+	public string UserPostInput { get; set; }
 
 	public ThreadModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config) {
 		ForumService = forumService;
@@ -31,14 +31,17 @@ public class ThreadModel : PageModel {
 
 	public async Task<IActionResult> OnPostAsync(string id) {
 		if (!await FindThread(id) || !await FindPosts()) return NotFound();
-		if(!ValidatePost(NewPost.UserInput)) return Redirect(Request.Path); //todo: error comm & clientside
-		var compiledText = CompilePost(NewPost.UserInput);
+		if(!ValidatePost(UserPostInput)) return Redirect(Request.Path); //todo: error comm & clientside
+		var compiledText = CompilePost(UserPostInput);
 		if(string.IsNullOrEmpty(compiledText)) return Redirect(Request.Path); //todo: error comm
-		
-		NewPost.Author = ForumPostAuthor.FromUser(await UserManager.GetUserAsync(User));
-		NewPost.CompiledContent = compiledText;
-		NewPost.Thread = Thread.Id;
-		await ForumService.CreatePost(NewPost);
+
+		var newPost = new ForumPost {
+			Author = ForumPostAuthor.FromUser(await UserManager.GetUserAsync(User)),
+			UserInput = UserPostInput,
+			CompiledContent = compiledText,
+			Thread = Thread.Id,
+		};
+		await ForumService.CreatePost(newPost);
 		return Redirect(Request.Path);
 	}
 
@@ -63,7 +66,7 @@ public class ThreadModel : PageModel {
 		return true;
 	}
 	
-	private string? CompilePost(string userInput) {
+	private string CompilePost(string userInput) {
 		//ASPNET does all html encoding for us already
 		return userInput;
 	}

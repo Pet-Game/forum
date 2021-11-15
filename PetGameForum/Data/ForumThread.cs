@@ -10,7 +10,7 @@ public class ForumThread {
 	public string Topic { get; set; }
 	public ForumThreadAuthor Author { get; set; }
 
-	public BsonDocument? ExtraElements;
+	public BsonDocument ExtraElements;
 }
 
 public class ForumThreadAuthor {

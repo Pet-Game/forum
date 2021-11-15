@@ -9,7 +9,7 @@ public class ForumPost {
 	public string CompiledContent { get; set; }
 	public ForumPostAuthor Author { get; set; }
 	
-	public BsonDocument? ExtraElements;
+	public BsonDocument ExtraElements;
 }
 
 public class ForumPostAuthor {

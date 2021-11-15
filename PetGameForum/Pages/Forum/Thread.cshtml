@@ -24,7 +24,7 @@
 @if (SignInManager.IsSignedIn(User)) {
 <p>New Post:</p>
 <form method="post" style="display: flex">
-    <input asp-for="NewPost.UserInput" class="form-control"/>
+    <input asp-for="UserPostInput" class="form-control"/>
     <input type="submit" value="Post" class="btn btn-primary" />
 </form>
 }
