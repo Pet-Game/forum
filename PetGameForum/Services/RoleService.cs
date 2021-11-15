@@ -19,22 +19,34 @@ public class RoleService {
 		RoleManager = roleManager;
 		Config = config;
 	}
+	
+	public async Task<bool> HasPermission(ClaimsPrincipal claims, Permission permission) {
+		if (claims == null) return false;
+		var user = await UserManager.GetUserAsync(claims);
+		return await HasPermission(user, permission);
+	}
 
-	public Task<bool> HasPermission(ClaimsPrincipal claims, Permission permission) =>
-		HasPermission(claims, Policy(permission));
+	public async Task<bool> HasPermission(User user, Permission permission) {
+		if (user == null) return false;
+		foreach (ObjectId roleId in user.Roles) {
+			var role = await RoleManager.FindByIdAsync(roleId.ToString());
+			if (role != null && role.HasPermission(permission))
+				return true;
+		}
+		return false;
+	}
+
 	public async Task<bool> HasPermission(ClaimsPrincipal claims, string permission) {
 		if (claims == null) return false;
 		var user = await UserManager.GetUserAsync(claims);
 		return await HasPermission(user, permission);
 	}
 
-	public Task<bool> HasPermission(User user, Permission permission) => 
-		HasPermission(user, Policy(permission));
 	public async Task<bool> HasPermission(User user, string permission) {
 		if (user == null) return false;
 		foreach (ObjectId roleId in user.Roles) {
 			var role = await RoleManager.FindByIdAsync(roleId.ToString());
-			if (role.HasClaim(new Claim(PermissionClaimType, permission)))
+			if (role != null && role.HasPermission(permission))
 				return true;
 		}
 		return false;

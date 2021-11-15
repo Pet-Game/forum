@@ -40,9 +40,7 @@ var app = builder.Build();
 	var role = new Role() {
 		Name = "Admin",
 	};
-	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.SeeModeratorArea)));
-	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.EditRoles)));
-	role.AddClaim(new Claim(RoleService.PermissionClaimType, RoleService.Policy(Permission.AssignRoles)));
+	role.Permissions = new []{Permission.SeeModeratorArea, Permission.EditRoles, Permission.AssignRoles};
 	await roleManager.CreateAsync(role);
 }
 
