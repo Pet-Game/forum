@@ -14,9 +14,10 @@ public class BanUserController : Controller {
 		PlayerService = playerService;
 	}
 
-	[HttpPost]
-	public async Task<ActionResult> Index(string idString, float duration, string reason) {
-		if (ObjectId.TryParse(idString, out var id)) return BadRequest();
+	[HttpGet]
+	[Route("BanUser")]
+	public async Task<ActionResult> Ban(string userId, float duration, string reason, string returnUrl = null) {
+		if (!ObjectId.TryParse(userId, out var id)) return BadRequest("argh");
 		var banPermission = duration switch {
 			>=0 and <= 30 => Permission.TempBanShort,
 			<=1500 => Permission.TempBanLong,
@@ -25,7 +26,8 @@ public class BanUserController : Controller {
 		if (!await RoleService.HasPermission(User, banPermission)) return Unauthorized();
 
 		await PlayerService.BanUser(id, duration, reason);
-		var fromUrl = Request.Query["from"].FirstOrDefault();
-		return Redirect(fromUrl ?? "/" );
+
+		returnUrl ??= Url.Content("~/");
+		return Redirect( returnUrl );
 	}
 }

@@ -18,12 +18,13 @@ var identityDbContext = new MongoDbContext(dbClient, "identity");
 builder.Services.AddDefaultIdentity<User>(options => {
 		options.SignIn.RequireConfirmedAccount = false;
 		options.User.RequireUniqueEmail = true;
-		options.Lockout.AllowedForNewUsers = false;
+		options.Lockout.AllowedForNewUsers = true;
 	})
 	.AddRoles<Role>()
 	.AddMongoDbStores<IMongoDbContext>(identityDbContext)
 	.AddDefaultTokenProviders();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<MongoClient>(dbClient);
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<RoleService>();
@@ -32,6 +33,7 @@ builder.Services.AddSingleton<IAuthorizationPolicyProvider, PolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 builder.Services.AddRazorPages();
+builder.Services.AddControllers();
 
 var app = builder.Build(); 
 
@@ -67,6 +69,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.MapControllers();
 
 app.UseAuthentication();
 app.UseAuthorization();

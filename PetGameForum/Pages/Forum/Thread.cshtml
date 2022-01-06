@@ -8,6 +8,8 @@
     ViewData["Title"] = Model.Thread.Topic;
 }
 
+<partial name="Shared/_BanUserPartial" />
+
 <h2>@Model.Thread.Topic</h2>
 <p>by <b>@Model.Thread.Author.Name</b></p>
 
@@ -31,7 +33,7 @@
     const formType = postActionForm.children[0];
     const formPostId = postActionForm.children[1];
     //const formReason = postActionForm.children[2];
-    function postAction(action, postId, authorName) {
+    function postAction(action, postId, authorId, authorName) {
         formType.value = action;
         formPostId.value = postId;
         //formReason.value = null;
@@ -48,7 +50,7 @@
                 }
                 break;
             case "ban":
-                //open ban form
+                ban(authorId, authorName);
                 break;
             case "restore":
                 postActionForm.submit();
@@ -77,7 +79,10 @@
                     <p>@post.CompiledContent</p>
                     <p class="post-timestamp">Posted @post.Id.CreationTime.ToString("HH:mm, MMMM dd yyyy")</p>
                     <select style="top:10px; right:10px; width: 50px; position: absolute" name="..."
-                            onchange="postAction(this.value, '@post.Id', '@post.Author.Name');this.selectedIndex = 0">
+                            onchange="
+                                postAction(this.value, '@post.Id', '@post.Author.Id', '@post.Author.Name');
+                                this.selectedIndex = 0;
+                            ">
                         <option selected>...</option>
                         @if (await RoleService.HasPermission(User, Permission.SeeModeratorArea)) {
                             <optgroup label="moderation">
@@ -105,7 +110,7 @@
 @if (SignInManager.IsSignedIn(User)) {
 <p>New Post:</p>
 <form method="post" style="display: flex">
-    <textarea asp-for="UserPostInput" class="form-control"></textarea>
+    <textarea asp-for="UserPostInput" class="form-control" maxlength="@Model.MaxPostLength"></textarea>
     <br/>
     <input type="submit" value="Post" class="btn btn-primary" />
 </form>

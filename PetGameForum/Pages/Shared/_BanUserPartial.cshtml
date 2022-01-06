@@ -1,20 +1,58 @@
-﻿@page
-@model BanUserPartialModel
+﻿@using PetGameForum.Services
+@inject RoleService roleService
+@{
+    var canShortBan = await roleService.HasPermission(User, Permission.TempBanShort);
+    var canLongBan = await roleService.HasPermission(User, Permission.TempBanLong);
+    var canPermaBan = await roleService.HasPermission(User, Permission.PermaBan);
+}
+@if (canShortBan || canLongBan || canPermaBan) {
+    <script>
+        
+        function ban(userId, userName) {
+            let form = document.getElementById("ban_form");
+            let heading = document.getElementById("ban_heading");
+            let user = document.getElementById("ban_user_name");
+            let user_id = document.getElementById("ban_user_id");
+            let duration = document.getElementById("ban_duration");
+            let reason = document.getElementById("ban_reason");
+            let container = document.getElementById("ban_container");
+            
+            heading.innerText = `Ban ${userName}`;
+            user.value = userName;
+            user_id.value = userId;
+            duration.value = 30;
+            reason.value = "unspecified";
+            
+            container.style.removeProperty("display");
+        }
+    </script>
 
-<div>
-    <form method="post">
-        <input hidden disabled asp-for="Ban.UserId" value=""/>
-        <input hidden disabled asp-for="Ban.PostId" value=""/>
-        <input disabled value="user name"/>
-        <textarea asp-for="Ban.Reason" value="reason"></textarea>
-        <select onchange="document.getElementById('ban_duration').value = this.value">
-            <option value="1">1 day</option>
-            <option value="7">1 week</option>
-            <option value="30">1 month</option>
-            <option value="120">4 months</option>
-            <option value="365">1 year</option>
-        </select>
-        <input asp-for="Ban.Duration" id="ban_duration" value="30"/>
-        <input type="submit" value="Ban" class="btn btn-danger" />
-    </form>
-</div>
+    <div style="position:fixed;background-color: lightcoral; padding: 20px 30px; z-index: 10; display: none" id="ban_container">
+        <form asp-controller="BanUser" asp-action="Ban" asp-route-returnUrl="@Context.Request.Path" method="get">
+            <h1 id="ban_heading">Ban user</h1>
+            <input hidden value="user id" name="userId" id="ban_user_id"/>
+            <label for="ban_user_name">User:</label><br/>
+            <input disabled value="user name" name="user_name" id="ban_user_name"/><br/>
+            <label for="ban_duration">Duration:</label><br/>
+            <select onchange="document.getElementById('ban_duration').value = this.value">
+                @if (canShortBan) {
+                    <option value="1">1 day</option>
+                    <option value="7">1 week</option>
+                    <option value="30" selected>1 month</option>
+                }
+                @if (canLongBan) {
+                    <option value="120">4 months</option>
+                    <option value="365">1 year</option>
+                }
+                @if (canPermaBan) {
+                    <option value="-1">Forever</option>
+                }
+            </select>
+            <input name="duration" id="ban_duration" value="30"/><br/>
+            <label for="ban_reason">Reason:</label><br/>
+            <textarea name="reason" id="ban_reason"></textarea><br/>
+            <label hidden></label>
+            <input type="submit" value="Ban" class="btn btn-danger"/>
+        </form>
+    </div>
+}

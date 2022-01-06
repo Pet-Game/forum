@@ -17,6 +17,8 @@ public class ThreadModel : PageModel {
 	public ForumThread Thread;
 	public List<ForumPost> Posts;
 
+	public int MaxPostLength;
+
 	[BindProperty] 
 	public string UserPostInput { get; set; }
 	
@@ -28,6 +30,8 @@ public class ThreadModel : PageModel {
 		UserManager = userManager;
 		Config = config;
 		RoleService = roleService;
+		
+		MaxPostLength = Config.GetSection("ForumSettings").GetValue<int>("MaxPostLength");
 	}
 	
 	public async Task<IActionResult> OnGet(string id) {
@@ -38,7 +42,7 @@ public class ThreadModel : PageModel {
 	public async Task<IActionResult> OnPostAsync(string id) {
 		if (!await FindThread(id) || !await FindPosts()) return NotFound();
 		if (UserPostInput is not null) {
-			if(!ValidatePost(UserPostInput)) return Redirect(Request.Path); //todo: error comm & clientside
+			if(ValidatePost(UserPostInput) != PostValidation.Ok) return Redirect(Request.Path); //todo: error comm & clientside
 			var compiledText = CompilePost(UserPostInput);
 			if(string.IsNullOrEmpty(compiledText)) return Redirect(Request.Path); //todo: error comm
 
@@ -67,9 +71,6 @@ public class ThreadModel : PageModel {
 					if(!await RoleService.HasPermission(User, Permission.NukePosts)) return Redirect(Request.Path); //todo: error comm
 					await ForumService.NukePost(post);
 					break;
-				case "ban":
-					//todo: ban checks
-					break;
 				case "restore":
 					if(!await RoleService.HasPermission(User, Permission.RestorePosts)) return Redirect(Request.Path); //todo: error comm
 					await ForumService.RestorePost(post);
@@ -95,11 +96,11 @@ public class ThreadModel : PageModel {
 		return true;
 	}
 
-	private bool ValidatePost(string userInput) {
-		if (string.IsNullOrWhiteSpace(userInput)) return false;
-		if (userInput.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxPostLength")) 
-			return false; //todo: clientside validation
-		return true;
+	private PostValidation ValidatePost(string userInput) {
+		if (string.IsNullOrWhiteSpace(userInput)) return PostValidation.Empty;
+		if (userInput.Length > MaxPostLength) 
+			return PostValidation.TooLong;
+		return PostValidation.Ok;
 	}
 	
 	private string CompilePost(string userInput) {
@@ -112,4 +113,10 @@ public class PostAction {
 	public string Type { get; set; }
 	public string Post { get; set; }
 	public string Reason { get; set; }
+}
+
+public enum PostValidation {
+	Ok,
+	Empty,
+	TooLong,
 }

@@ -1,5 +1,16 @@
 ﻿@using PetGameForum.Services
 @inject RoleService roleService
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@inject PlayerService PlayerService
+
+@{
+    if (await PlayerService.EnsureBan(User)) {
+        <p>ur banned >:(</p> //todo: more information
+        IgnoreBody();
+        return;
+    }
+}
 
 <!DOCTYPE html>
 <html lang="en">
