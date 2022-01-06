@@ -1,6 +1,8 @@
 ﻿@page "{id}"
+@using PetGameForum.Services
 @model PetGameForum.Pages.Forum.ThreadModel
 @inject SignInManager<User> SignInManager
+@inject RoleService RoleService
 
 @{
     ViewData["Title"] = Model.Thread.Topic;
@@ -9,22 +11,102 @@
 <h2>@Model.Thread.Topic</h2>
 <p>by <b>@Model.Thread.Author.Name</b></p>
 
+@{
+    var canDelete = await RoleService.HasPermission(User, Permission.DeletePosts);
+    var canNuke = await RoleService.HasPermission(User, Permission.NukePosts);
+    var canBan = await RoleService.HasPermission(User, Permission.TempBanShort) ||
+                     await RoleService.HasPermission(User, Permission.TempBanLong) ||
+                     await RoleService.HasPermission(User, Permission.PermaBan);
+    var canRestore = await RoleService.HasPermission(User, Permission.RestorePosts);
+}
+
+<form method="post" style="display: none" id="post_action_form">
+    <input asp-for="PostAction.Type"/>
+    <input asp-for="PostAction.Post"/>
+    <!-- <input asp-for="PostAction.Reason"/> -->
+</form>
+
+<script>
+    const postActionForm = document.getElementById("post_action_form");
+    const formType = postActionForm.children[0];
+    const formPostId = postActionForm.children[1];
+    //const formReason = postActionForm.children[2];
+    function postAction(action, postId, authorName) {
+        formType.value = action;
+        formPostId.value = postId;
+        //formReason.value = null;
+        //formBanDuration.value = null;
+        switch (action){
+            case "delete":
+                if (confirm(`do you really want to delete post ${postId} by ${authorName}?`)){
+                    postActionForm.submit();
+                }
+                break;
+            case "nuke":
+                if (confirm(`do you really want to nuke post ${postId} by ${authorName}? (it will be unrecoverable)`)){
+                    postActionForm.submit();
+                }
+                break;
+            case "ban":
+                //open ban form
+                break;
+            case "restore":
+                postActionForm.submit();
+                break;
+        }
+
+    }
+</script>
+
+
 <table class="forum-threadlist">
     @foreach (var post in Model.Posts) {
-        <tr>
-            <td class="post-user">@post.Author.Name</td>
-            <td>
-                <p>@post.CompiledContent</p>
-                <p class="post-timestamp">Posted @post.Id.CreationTime.ToString("HH:mm, MMMM dd yyyy")</p>
-            </td>
-        </tr>
+        
+        @if (!post.Deleted || await RoleService.HasPermission(User, Permission.SeeDeletedInformation)) {
+            @if (post.Deleted) {
+                <tr><td style="background-color: lightgray; text-align: center" 
+                        onclick="document.getElementById('@post.Id').style.removeProperty('display'); this.style.display = 'none';">
+                    --- deleted post ---
+                </td></tr>
+            }
+            <tr id="@post.Id" class="@(post.Deleted ? "post-deleted" : "")" style="@(post.Deleted ? "display: none" : "")">
+                <td class="post-user">
+                    @post.Author.Name
+                </td>
+                <td style="position:relative;">
+                    <p>@post.CompiledContent</p>
+                    <p class="post-timestamp">Posted @post.Id.CreationTime.ToString("HH:mm, MMMM dd yyyy")</p>
+                    <select style="top:10px; right:10px; width: 50px; position: absolute" name="..."
+                            onchange="postAction(this.value, '@post.Id', '@post.Author.Name');this.selectedIndex = 0">
+                        <option selected>...</option>
+                        @if (await RoleService.HasPermission(User, Permission.SeeModeratorArea)) {
+                            <optgroup label="moderation">
+                                @if (canDelete && !post.Deleted) {
+                                    <option value="delete">delete post</option>
+                                }
+                                @if (canRestore && post.Deleted) {
+                                    <option value="restore">restore post</option>
+                                }
+                                @if (canNuke) {
+                                    <option value="nuke">nuke post</option>
+                                }
+                                @if (canBan) {
+                                    <option value="ban">ban @post.Author.Name</option>
+                                }
+                            </optgroup>
+                        }
+                    </select>
+                </td>
+            </tr>
+        }
     }
 </table>
 
 @if (SignInManager.IsSignedIn(User)) {
 <p>New Post:</p>
 <form method="post" style="display: flex">
-    <input asp-for="UserPostInput" class="form-control"/>
+    <textarea asp-for="UserPostInput" class="form-control"></textarea>
+    <br/>
     <input type="submit" value="Post" class="btn btn-primary" />
 </form>
 }

@@ -5,6 +5,7 @@ namespace PetGameForum.Data;
 public class ForumPost {
 	public ObjectId Id { get; set; }
 	public ObjectId Thread { get; set; }
+	public bool Deleted { get; set; }
 	public string UserInput { get; set; }
 	public string CompiledContent { get; set; }
 	public ForumPostAuthor Author { get; set; }

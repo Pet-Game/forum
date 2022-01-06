@@ -27,6 +27,7 @@ builder.Services.AddDefaultIdentity<User>(options => {
 builder.Services.AddSingleton<MongoClient>(dbClient);
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<RoleService>();
+builder.Services.AddScoped<PlayerService>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 

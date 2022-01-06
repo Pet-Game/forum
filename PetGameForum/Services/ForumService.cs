@@ -8,7 +8,6 @@ public class ForumService {
 	private readonly IMongoCollection<ForumThread> threadCollection;
 	private readonly IMongoCollection<ForumPost> postCollection;
 	
-
 	public ForumService(MongoClient dbClient) {
 		var database = dbClient.GetDatabase("forum");
 		threadCollection = database.GetCollection<ForumThread>("threads");
@@ -44,5 +43,20 @@ public class ForumService {
 	public async Task CreatePost(ForumPost newPost) {
 		//todo: do more validation here
 		await postCollection.InsertOneAsync(newPost);
+	}
+
+	public async Task DeletePost(ObjectId postId) {
+		var update = Builders<ForumPost>.Update.Set(p => p.Deleted, true);
+		await postCollection.UpdateOneAsync(post => post.Id == postId, update);
+	}
+
+	public async Task RestorePost(ObjectId postId) {
+		var update = Builders<ForumPost>.Update.Set(p => p.Deleted, false);
+		await postCollection.UpdateOneAsync(post => post.Id == postId, update);
+	}
+
+	public async Task<bool> NukePost(ObjectId postId) {
+		var res = await postCollection.DeleteOneAsync(p => p.Id == postId);
+		return res.IsAcknowledged && res.DeletedCount > 0;
 	}
 }

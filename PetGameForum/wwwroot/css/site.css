@@ -26,6 +26,10 @@ body {
   vertical-align: top;
 }
 
+.post-deleted {
+  background-color: lightcoral;
+}
+
 .post-timestamp {
   text-align: right;
   color: grey;
