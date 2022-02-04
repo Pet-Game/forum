@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using PetGameForum.Data;
 using PetGameForum.Services;
@@ -8,10 +9,12 @@ namespace PetGameForum.Controllers;
 public class BanUserController : Controller {
 	public readonly RoleService RoleService;
 	public readonly PlayerService PlayerService;
+	public readonly UserManager<User> UserManager;
 
-	public BanUserController(RoleService roleService, PlayerService playerService) {
+	public BanUserController(RoleService roleService, PlayerService playerService, UserManager<User> userManager) {
 		RoleService = roleService;
 		PlayerService = playerService;
+		UserManager = userManager;
 	}
 
 	[HttpGet]
@@ -25,7 +28,8 @@ public class BanUserController : Controller {
 		};
 		if (!await RoleService.HasPermission(User, banPermission)) return Unauthorized();
 
-		await PlayerService.BanUser(id, duration, reason);
+		var actor = await UserManager.GetUserAsync(User);
+		await PlayerService.BanUser(id, duration, reason, actor);
 
 		returnUrl ??= Url.Content("~/");
 		return Redirect( returnUrl );

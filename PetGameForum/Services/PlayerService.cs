@@ -18,13 +18,14 @@ public class PlayerService {
 	public readonly SignInManager<User> AspSigninManager;
 	public readonly IHttpContextAccessor HttpContext;
 	public readonly IAuthenticationHandlerProvider Handlers;
+	private readonly LogService logging;
 	private IAuthenticationSchemeProvider AuthThemeProvider;
 
 	private readonly IMongoCollection<User> userCollection;
 	private readonly IMongoCollection<Ban> banCollection;
 
 	public PlayerService(UserManager<User> aspUserManager, RoleManager<Role> aspRoleManager, IConfiguration  config, 
-			MongoClient dbClient, SignInManager<User> aspSigninManager, IHttpContextAccessor httpContext, IAuthenticationHandlerProvider handlers, IAuthenticationSchemeProvider authThemeProvider) {
+			MongoClient dbClient, SignInManager<User> aspSigninManager, IHttpContextAccessor httpContext, IAuthenticationHandlerProvider handlers, IAuthenticationSchemeProvider authThemeProvider, LogService logging) {
 		AspUserManager = aspUserManager;
 		AspRoleManager = aspRoleManager;
 		Config = config;
@@ -32,6 +33,7 @@ public class PlayerService {
 		HttpContext = httpContext;
 		Handlers = handlers;
 		AuthThemeProvider = authThemeProvider;
+		this.logging = logging;
 
 		var database = dbClient.GetDatabase("identity");
 		userCollection = database.GetCollection<User>("users");
@@ -50,7 +52,8 @@ public class PlayerService {
 	}
 
 	public async Task<LoginResult> Login(string email, string password, bool remember) {
-		var signInResult = await AspSigninManager.PasswordSignInAsync(email, password, remember, false);
+		var user = await AspUserManager.FindByEmailAsync(email);
+		var signInResult = await AspSigninManager.PasswordSignInAsync(user, password, remember, false);
 		return GetLoginResult(signInResult);
 	}
 	
@@ -70,15 +73,16 @@ public class PlayerService {
 		return LoginResult.Unknown;
 	}
 
-	public async Task BanUser(ObjectId userId, float duration, string reason) {
+	public async Task BanUser(ObjectId userId, float duration, string reason, User actor) {
 		var user = await AspUserManager.FindByIdAsync(userId.ToString()); //consider accessing collection
-		await BanUser(user, duration, reason);
+		await BanUser(user, duration, reason, actor);
 	}
 
-	public async Task BanUser(User user, float duration, string reason) {
+	public async Task BanUser(User user, float duration, string reason, User actor) {
 		await AspSigninManager.SignOutAsync();
 
 		var unbanTime = DateTime.UtcNow.AddDays(duration);
+		if(duration < 0) unbanTime = DateTime.MaxValue;
 		await AspUserManager.SetLockoutEndDateAsync(user, unbanTime);
 		
 		var ban = new Ban {
@@ -92,6 +96,8 @@ public class PlayerService {
 
 		var update = Builders<User>.Update.Set(u => u.Banned, ban.Id);
 		await userCollection.UpdateOneAsync(u => u.Id == user.Id, update);
+
+		await logging.Log(LogKind.BanUser, user.Link(), $"{user.UserName} was banned for {duration} days because of {reason}", actor);
 	}
 	
 	public async Task<bool> IsUserBanned(User user) {
@@ -101,13 +107,16 @@ public class PlayerService {
 		if (ban.BanEnd < DateTime.UtcNow) { //ban *just* ran out, so lets update the files
 			var update = Builders<User>.Update.Set(u => u.Banned, null);
 			await userCollection.UpdateOneAsync(u => u.Id == user.Id, update);
+			await logging.Log(LogKind.BanEnd, user.Link(), 
+				$"{user.UserName} who was banned for {ban.Reason} for {ban.Duration} days was just unbanned.", user);
 			return false;
 		}
 		return true; //still banned v_v
 	}
 	
 	public async Task<bool> IsUserBanned(ClaimsPrincipal principal) {
-		return true;
+		var user = await AspUserManager.GetUserAsync(principal);
+		return await IsUserBanned(user);
 	}
 
 	public async Task<bool> IsUserBanned(ObjectId userId) {
@@ -119,6 +128,10 @@ public class PlayerService {
 		if (!await IsUserBanned(user)) return false;
 		await AspSigninManager.SignOutAsync();
 		return true;
+	}
+
+	public async Task<List<User>> GetAll() {
+		return await userCollection.Find(FilterDefinition<User>.Empty).ToListAsync();
 	}
 }
 

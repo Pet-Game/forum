@@ -1,0 +1,15 @@
+﻿@page
+@model PetGameForum.Pages.Moderation.Users
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<table>
+    <thead><td>Name</td></thead>
+    @foreach (var user in Model.UserList) {
+        <tr>
+            <td><a href="@user.Link()">@user.UserName</a></td>
+        </tr>
+    }
+</table>

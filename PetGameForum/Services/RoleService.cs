@@ -53,4 +53,8 @@ public class RoleService {
 	}
 
 	public static string Policy(Permission permission) => PermissionClaimPrefix + permission;
+
+	public List<Role> GetAll() {
+		return RoleManager.Roles.ToList();
+	}
 }

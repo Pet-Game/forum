@@ -41,6 +41,7 @@ public class ThreadModel : PageModel {
 
 	public async Task<IActionResult> OnPostAsync(string id) {
 		if (!await FindThread(id) || !await FindPosts()) return NotFound();
+		var user = await UserManager.GetUserAsync(User);
 		if (UserPostInput is not null) {
 			if(ValidatePost(UserPostInput) != PostValidation.Ok) return Redirect(Request.Path); //todo: error comm & clientside
 			var compiledText = CompilePost(UserPostInput);
@@ -48,12 +49,12 @@ public class ThreadModel : PageModel {
 
 			var newPost = new ForumPost {
 				Id = ObjectId.GenerateNewId(),
-				Author = ForumPostAuthor.FromUser(await UserManager.GetUserAsync(User)),
+				Author = ForumPostAuthor.FromUser(user),
 				UserInput = UserPostInput,
 				CompiledContent = compiledText,
 				Thread = Thread.Id,
 			};
-			await ForumService.CreatePost(newPost);
+			await ForumService.CreatePost(newPost, user);
 			return Redirect(Request.Path + $"#{newPost.Id}");
 		}
 
@@ -61,22 +62,23 @@ public class ThreadModel : PageModel {
 			if (!ObjectId.TryParse(PostAction.Post, out var post)) return Redirect(Request.Path); //todo: error comm
 			var postIndex = Posts.FindIndex(p => p.Id == post);
 			if(postIndex < 0) return Redirect(Request.Path); //todo: error comm
-			var previousPost = Posts[postIndex == 0 ? 1 : postIndex - 1];
+			postIndex --; //show previous post
+			var previousPost = postIndex < Posts.Count && postIndex >= 0 ? Posts[postIndex] : null;
 			switch (PostAction.Type) {
 				case "delete":
-					if(!await RoleService.HasPermission(User, Permission.DeletePosts)) return Redirect(Request.Path); //todo: error comm
-					await ForumService.DeletePost(post);
+					if(!await RoleService.HasPermission(user, Permission.DeletePosts)) return Redirect(Request.Path); //todo: error comm
+					await ForumService.DeletePost(post, user);
 					break;
 				case "nuke": 
-					if(!await RoleService.HasPermission(User, Permission.NukePosts)) return Redirect(Request.Path); //todo: error comm
-					await ForumService.NukePost(post);
+					if(!await RoleService.HasPermission(user, Permission.NukePosts)) return Redirect(Request.Path); //todo: error comm
+					await ForumService.NukePost(post, user);
 					break;
 				case "restore":
-					if(!await RoleService.HasPermission(User, Permission.RestorePosts)) return Redirect(Request.Path); //todo: error comm
-					await ForumService.RestorePost(post);
+					if(!await RoleService.HasPermission(user, Permission.RestorePosts)) return Redirect(Request.Path); //todo: error comm
+					await ForumService.RestorePost(post, user);
 					break;
 			}
-			return Redirect(Request.Path + $"#{previousPost.Id}");
+			return Redirect(Request.Path + $"#{previousPost?.Id}");
 		}
 
 		return NotFound();

@@ -11,6 +11,8 @@ public class ForumPost {
 	public ForumPostAuthor Author { get; set; }
 	
 	public BsonDocument ExtraElements;
+	
+	public string Link() => $"/Forum/Thread/{Thread}#{Id}";
 }
 
 public class ForumPostAuthor {

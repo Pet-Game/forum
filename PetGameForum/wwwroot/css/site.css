@@ -35,3 +35,28 @@ body {
   color: grey;
   font-size: 10px;
 }
+
+.role {
+  border-radius: 5px; 
+  border-style: solid;
+  border-width: 2px; 
+  float: left; 
+  padding: 0 5px; 
+  color: white;
+}
+
+.role:nth-child(5n+0){
+  background-color: rebeccapurple;
+}
+.role:nth-child(5n+1){
+  background-color: saddlebrown;
+}
+.role:nth-child(5n+2){
+  background-color: DarkSlateGrey;
+}
+.role:nth-child(5n+3){
+  background-color: Maroon;
+}
+.role:nth-child(5n+4){
+  background-color: DarkGoldenRod;
+}

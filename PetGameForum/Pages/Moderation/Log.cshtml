@@ -1,0 +1,19 @@
+﻿@page
+@model PetGameForum.Pages.Moderation.Log
+@inject UserManager<User> UserManager
+
+@{
+    ViewData["Title"] = "Log";
+}
+
+<table>
+    <thead><td>Kind</td><td>Message/Link</td><td>User</td></thead>
+    @foreach (var log in Model.Logs) {
+        var user = await UserManager.FindByIdAsync(log.Author.ToString());
+        <tr>
+            <td>@log.Kind</td>
+            <td><a href="@log.Link">@log.Message</a></td>
+            <td><a href="@user?.Link()">@user?.UserName</a></td>
+        </tr>
+    }
+</table>

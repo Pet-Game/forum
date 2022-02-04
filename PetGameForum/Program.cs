@@ -26,6 +26,7 @@ builder.Services.AddDefaultIdentity<User>(options => {
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<MongoClient>(dbClient);
+builder.Services.AddScoped<LogService>();
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PlayerService>();

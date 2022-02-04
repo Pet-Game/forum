@@ -1,0 +1,24 @@
+﻿@page
+@model PetGameForum.Pages.Moderation.Roles
+
+@{
+    ViewData["Title"] = "Roles";
+}
+
+<table>
+    <thead><td>Name</td></thead>
+    @foreach (var role in Model.RoleList) {
+        <tr>
+            <td>@role.Name</td>
+        </tr>
+        <tr>
+            <td>
+                @foreach (var perm in role.Permissions) {
+                    <div class="role">
+                        @perm.ToString()
+                    </div>
+                }
+            </td>
+        </tr>
+    }
+</table>

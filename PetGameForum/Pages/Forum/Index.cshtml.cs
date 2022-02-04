@@ -28,11 +28,12 @@ public class ForumHubModel : PageModel {
 		if(string.IsNullOrWhiteSpace(Topic) || 
 				Topic.Length > Config.GetSection("ForumSettings").GetValue<int>("MaxThreadNameLength"))
 			return Redirect(Request.Path); //todo: error communication and clientside validation
+		var user = await UserManager.GetUserAsync(User);
 		var newThread = new ForumThread {
-			Author = ForumThreadAuthor.FromUser(await UserManager.GetUserAsync(User)),
+			Author = ForumThreadAuthor.FromUser(user),
 			Topic = Topic,
 		};
-		await ForumService.CreateThread(newThread);
+		await ForumService.CreateThread(newThread, user);
 		return Redirect(Request.Path); //redirect to self makes it a get request again and reloading doesnt post again
 	}
 }
