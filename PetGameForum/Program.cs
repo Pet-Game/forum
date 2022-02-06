@@ -1,6 +1,3 @@
-
-using System.Security.Claims;
-using AspNetCore.Identity.MongoDbCore.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver;
@@ -44,17 +41,8 @@ var app = builder.Build();
 	var role = new Role() {
 		Name = "Admin",
 	};
-	role.Permissions = new []{Permission.SeeModeratorArea, Permission.EditRoles, Permission.AssignRoles};
+	role.Permissions = new List<Permission>{Permission.SeeModeratorArea, Permission.EditRoles, Permission.AssignRoles};
 	await roleManager.CreateAsync(role);
-}
-
-{
-	using var scope = app.Services.CreateScope();
-	var userManager = scope.ServiceProvider.GetService<UserManager<User>>();
-	var roleManager = scope.ServiceProvider.GetService<RoleManager<Role>>();
-	var user = await userManager.FindByEmailAsync("cool@cool");
-	user.AddRole((await roleManager.FindByNameAsync("Admin")).Id);
-	await userManager.UpdateAsync(user);
 }
 
 // Configure the HTTP request pipeline.

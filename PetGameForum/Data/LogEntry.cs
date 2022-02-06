@@ -19,5 +19,6 @@ public enum LogKind {
 	DeletePost,
 	NukePost,
 	BanUser,
-	BanEnd
+	BanEnd,
+	EditRoles
 }

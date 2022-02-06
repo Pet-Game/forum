@@ -1,6 +1,7 @@
 ﻿namespace PetGameForum.Data; 
 
 public enum Permission {
+	None,
 	SeeModeratorArea,
 	TempBanShort, //bans 1 month or shorter
 	TempBanLong, //bans over 1 month

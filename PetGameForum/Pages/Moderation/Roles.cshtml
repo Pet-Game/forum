@@ -1,24 +1,100 @@
 ﻿@page
+@using PetGameForum.Util
 @model PetGameForum.Pages.Moderation.Roles
 
 @{
     ViewData["Title"] = "Roles";
 }
 
+<form method="post" style="display: none" id="command_form">
+    <!--0--><input asp-for="Command"/>
+    <!--1--><input asp-for="ChangePermission.RoleId">
+    <!--2--><input asp-for="ChangePermission.Permission"/>
+    <!--3--><input asp-for="ChangePermission.Action">
+    <!--4--><input asp-for="DeleteRole"/>
+    <!--5--><input asp-for="NewRoleName"/>
+    <!--6--><input asp-for="RenameRole.RoleId"/>
+    <!--7--><input asp-for="RenameRole.Name"/>
+</form>
+
+<script>
+    let commandForm = document.getElementById("command_form");
+    let commandFormCommand = commandForm.children[0];
+    let commandFormRoleId = commandForm.children[1];
+    let commandFormPermission = commandForm.children[2];
+    let commandFormAction = commandForm.children[3];
+    let commandFormDeleteRole = commandForm.children[4];
+    let commandFormNewRoleName = commandForm.children[5];
+    let commandFormRenameRole = commandForm.children[6];
+    let commandFormRenameName = commandForm.children[7];
+    
+    function removePermission(roleId, permission){
+        commandFormCommand.value = @RoleCommand.ChangePermission.JsString();
+        commandFormRoleId.value = roleId;
+        commandFormPermission.value = permission;
+        commandFormAction.value = @ChangePermission.ChangeAction.Remove.JsString();
+        commandForm.submit();
+    }
+    
+    function rename(roleId, name){
+        let newName = prompt("new name for " + name + ":", name);
+        commandFormCommand.value = @RoleCommand.Rename.JsString();
+        commandFormRenameRole.value = roleId;
+        commandFormRenameName.value = newName;
+        commandForm.submit();
+    }
+    
+    function deleteRole(roleId, name){
+        if(confirm("really delete " + name + "?")){
+            commandFormCommand.value = @RoleCommand.DeleteRole.JsString();
+            commandFormDeleteRole.value = roleId;
+            commandForm.submit();
+        }
+    }
+    
+    function createRole(){
+        let newName = prompt("new name for new role");
+        commandFormCommand.value = @RoleCommand.AddRole.JsString();
+        commandFormNewRoleName.value = newName;
+        commandForm.submit();
+    }
+</script>
+
 <table>
     <thead><td>Name</td></thead>
     @foreach (var role in Model.RoleList) {
         <tr>
-            <td>@role.Name</td>
+            <td>
+                <h2>@role.Name</h2>
+                <button onclick="rename(@role.Id.JsString(), @role.Name.JsString())">rename</button>
+                <button onclick="deleteRole(@role.Id.JsString(), @role.Name.JsString())">delete</button>
+            </td>
         </tr>
         <tr>
             <td>
                 @foreach (var perm in role.Permissions) {
                     <div class="role">
                         @perm.ToString()
+                        <button class="delete-role-btn" onclick="removePermission('@role.Id', '@perm')">x</button>
                     </div>
                 }
+                <form method="post">
+                    <input asp-for="Command" value=@RoleCommand.ChangePermission style="display: none"/>
+                    <input asp-for="ChangePermission.RoleId" value=@role.Id style="display: none">
+                    <input asp-for="ChangePermission.Action" value=@ChangePermission.ChangeAction.Add style="display: none">
+                    <select asp-for="ChangePermission.Permission">
+                        @foreach (var perm in Enum.GetValues<Permission>()) {
+                            <option value="@perm">@perm</option>
+                        }
+                    </select>
+                    <input type="submit" value="+" class="btn btn-secondary"/>
+                </form>
             </td>
         </tr>
     }
+    <tr>
+        <td>
+            <button onclick="createRole()">new role</button>
+        </td>
+    </tr>
 </table>

@@ -7,7 +7,7 @@ namespace PetGameForum.Data;
 
 public class Role : MongoIdentityRole<ObjectId> {
 	[BsonRepresentation(BsonType.String)]
-	public Permission[] Permissions;
+	public List<Permission> Permissions = new();
 
 	public bool HasPermission(Permission permission) {
 		return Permissions.Any(perm => perm == permission);

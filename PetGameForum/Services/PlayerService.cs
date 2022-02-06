@@ -133,6 +133,10 @@ public class PlayerService {
 	public async Task<List<User>> GetAll() {
 		return await userCollection.Find(FilterDefinition<User>.Empty).ToListAsync();
 	}
+
+	public async Task<User> Get(ClaimsPrincipal principal) {
+		return await AspUserManager.GetUserAsync(principal);
+	}
 }
 
 public enum LoginResult {
