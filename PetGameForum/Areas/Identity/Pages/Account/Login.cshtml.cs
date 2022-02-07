@@ -117,6 +117,9 @@ namespace PetGameForum.Areas.Identity.Pages.Account
                     case LoginResult.Banned:
                         _logger.LogWarning("User account banned.");
                         return RedirectToPage("./Banned");
+                    case LoginResult.UnknownUser:
+                        ModelState.AddModelError(string.Empty, "Unknown user.");
+                        return Page();;
                     case LoginResult.LockedOut:
                         _logger.LogWarning("User account locked out.");
                         return RedirectToPage("./Lockout");

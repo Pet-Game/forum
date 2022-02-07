@@ -4,7 +4,11 @@ using MongoDB.Bson;
 namespace PetGameForum.Data; 
 
 public class User : MongoIdentityUser<ObjectId> {
+	public static readonly string defaultPfp = "/defaultResources/pfp.gif";
+	
 	public ObjectId? Banned;
+	public string PfpUrl;
 
-	public string Link() => $"/User/{Id}";
+	public string Link() => $"/Player/{Id}";
+	public string Pfp() => string.IsNullOrWhiteSpace(PfpUrl) ? defaultPfp : PfpUrl;
 }

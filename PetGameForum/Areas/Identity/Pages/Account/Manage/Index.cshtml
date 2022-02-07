@@ -16,10 +16,22 @@
                 <label asp-for="Input.Username" class="form-label"></label>
             </div>
             <div class="form-floating">
-                <input asp-for="Input.PhoneNumber" class="form-control" />
-                <label asp-for="Input.PhoneNumber" class="form-label"></label>
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <input asp-for="Input.ProfilePictureUrl" class="form-control" id="pfp_url" oninput="setImg(value)"/>
+                <label asp-for="Input.ProfilePictureUrl" class="form-label"></label>
             </div>
+            <img src="/defaultResources/pfp.gif" class="pfp" id="user_pfp"/>
+            <script>
+                let url = document.getElementById("pfp_url");
+                let img = document.getElementById("user_pfp");
+                let default_src = img.src;
+                function setImg(path){
+                    if (!path){
+                        path = default_src;    
+                    }
+                    img.src = path;
+                }
+                setImg(url.value);
+            </script>
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>

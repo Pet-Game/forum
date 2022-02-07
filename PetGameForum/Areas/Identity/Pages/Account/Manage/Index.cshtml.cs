@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -56,23 +52,21 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Phone]
-            [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
             public string Username { get; set; }
+
+            public string ProfilePictureUrl { get; set; }
         }
 
-        private async Task LoadAsync(User user)
-        {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+        private async Task LoadAsync(User user) {
+            //var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-            Username = userName;
+            //Username = userName;
 
             Input = new InputModel
             {
-                Username = userName,
-                PhoneNumber = phoneNumber,
+                Username = user.UserName,
+                ProfilePictureUrl = user.PfpUrl,
+                //PhoneNumber = phoneNumber,
             };
         }
 
@@ -88,8 +82,7 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
-        {
+        public async Task<IActionResult> OnPostAsync() {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
@@ -109,14 +102,12 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
-
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            if (Input.PhoneNumber != phoneNumber)
-            {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
+            
+            if (Input.ProfilePictureUrl != user.PfpUrl) {
+                user.PfpUrl = Input.ProfilePictureUrl;
+                var setPfpResult = await _userManager.UpdateAsync(user);
+                if (!setPfpResult.Succeeded) {
+                    StatusMessage = "Unexpected error when trying to set name.";
                     return RedirectToPage();
                 }
             }

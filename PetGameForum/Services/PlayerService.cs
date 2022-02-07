@@ -53,6 +53,7 @@ public class PlayerService {
 
 	public async Task<LoginResult> Login(string email, string password, bool remember) {
 		var user = await AspUserManager.FindByEmailAsync(email);
+		if(user is null) return LoginResult.UnknownUser;
 		var signInResult = await AspSigninManager.PasswordSignInAsync(user, password, remember, false);
 		return GetLoginResult(signInResult);
 	}
@@ -137,6 +138,10 @@ public class PlayerService {
 	public async Task<User> Get(ClaimsPrincipal principal) {
 		return await AspUserManager.GetUserAsync(principal);
 	}
+	
+	public async Task<User> Get(string objectId) {
+		return await AspUserManager.FindByIdAsync(objectId);
+	}
 }
 
 public enum LoginResult {
@@ -145,5 +150,6 @@ public enum LoginResult {
 	LockedOut,
 	Needs2FA,
 	NotAllowed,
+	UnknownUser,
 	Unknown,
 }

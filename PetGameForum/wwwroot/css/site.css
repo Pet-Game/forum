@@ -73,3 +73,8 @@ body {
 .role:nth-child(5n+4){
   background-color: DarkGoldenRod;
 }
+
+.pfp{
+  width: 100px;
+  height: 100px;
+}
