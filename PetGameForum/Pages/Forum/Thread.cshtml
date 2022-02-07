@@ -73,7 +73,8 @@
             }
             <tr id="@post.Id" class="@(post.Deleted ? "post-deleted" : "")" style="@(post.Deleted ? "display: none" : "")">
                 <td class="post-user">
-                    @post.Author.Name
+                    <h4><a href="@post.Author.Link()">@post.Author.Name</a></h4>
+                    <img src="@post.Author.Pfp" class="pfp"/>
                 </td>
                 <td style="position:relative;">
                     <p>@post.CompiledContent</p>

@@ -21,6 +21,13 @@ body {
   width: 100%;
 }
 
+.forum-threadlist tr:nth-child(2n+0) {
+  background-color: #b1d1b9;
+}
+.forum-threadlist tr:nth-child(2n+1) {
+  background-color: #b1d0d1;
+}
+
 .post-user {
   width: 200px;
   vertical-align: top;

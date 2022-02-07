@@ -53,8 +53,8 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             public string Username { get; set; }
-
             public string ProfilePictureUrl { get; set; }
+            public string ProfileDescription { get; set; }
         }
 
         private async Task LoadAsync(User user) {
@@ -66,6 +66,7 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
             {
                 Username = user.UserName,
                 ProfilePictureUrl = user.PfpUrl,
+                ProfileDescription = user.Description,
                 //PhoneNumber = phoneNumber,
             };
         }
@@ -96,18 +97,30 @@ namespace PetGameForum.Areas.Identity.Pages.Account.Manage
             }
 
             if (Input.Username != user.UserName) {
-                var setNameResult = await _userManager.SetUserNameAsync(user, Input.Username);
-                if (!setNameResult.Succeeded) {
+                //todo: have rename affect forum post names
+                var result = await _userManager.SetUserNameAsync(user, Input.Username);
+                if (!result.Succeeded) {
                     StatusMessage = "Unexpected error when trying to set name.";
                     return RedirectToPage();
                 }
             }
             
             if (Input.ProfilePictureUrl != user.PfpUrl) {
+                //todo: have rename affect forum post pfps
                 user.PfpUrl = Input.ProfilePictureUrl;
-                var setPfpResult = await _userManager.UpdateAsync(user);
-                if (!setPfpResult.Succeeded) {
-                    StatusMessage = "Unexpected error when trying to set name.";
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded) {
+                    StatusMessage = "Unexpected error when trying to set profile picture.";
+                    return RedirectToPage();
+                }
+            }
+
+            if (Input.ProfileDescription != user.Description) {
+                //todo: validation
+                user.Description = Input.ProfileDescription;
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded) {
+                    StatusMessage = "Unexpected error when trying to set profile description.";
                     return RedirectToPage();
                 }
             }

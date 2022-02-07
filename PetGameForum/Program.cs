@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using MongoDbGenericRepository;
 using PetGameForum.Data;
 using PetGameForum.Services;
+using PetGameForum.Util;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,9 @@ builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-var app = builder.Build(); 
+var app = builder.Build();
+
+StaticStore.Services = app.Services;
 
 {
 	using var scope = app.Services.CreateScope();

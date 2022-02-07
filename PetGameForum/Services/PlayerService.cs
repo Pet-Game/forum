@@ -139,6 +139,10 @@ public class PlayerService {
 		return await AspUserManager.GetUserAsync(principal);
 	}
 	
+	public async Task<User> Get(ObjectId objectId) {
+		return await userCollection.Find(u => u.Id == objectId).FirstOrDefaultAsync();
+	}
+	
 	public async Task<User> Get(string objectId) {
 		return await AspUserManager.FindByIdAsync(objectId);
 	}

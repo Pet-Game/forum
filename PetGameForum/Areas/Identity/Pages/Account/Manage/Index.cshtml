@@ -1,4 +1,5 @@
 ﻿@page
+@using PetGameForum.Util
 @model IndexModel
 @{
     ViewData["Title"] = "Profile";
@@ -19,19 +20,21 @@
                 <input asp-for="Input.ProfilePictureUrl" class="form-control" id="pfp_url" oninput="setImg(value)"/>
                 <label asp-for="Input.ProfilePictureUrl" class="form-label"></label>
             </div>
-            <img src="/defaultResources/pfp.gif" class="pfp" id="user_pfp"/>
+            <img src="@Model.Input.ProfilePictureUrl" class="pfp" id="user_pfp"/>
             <script>
                 let url = document.getElementById("pfp_url");
                 let img = document.getElementById("user_pfp");
-                let default_src = img.src;
                 function setImg(path){
                     if (!path){
-                        path = default_src;    
+                        path = @Player.defaultPfp.JsString();    
                     }
                     img.src = path;
                 }
-                setImg(url.value);
             </script>
+            <div class="form-floating">
+                <textarea asp-for="Input.ProfileDescription" class="form-control" maxlength="2000"></textarea>
+                <label asp-for="Input.ProfileDescription" class="form-label"></label>
+            </div>
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>

@@ -1,4 +1,5 @@
 ﻿@page "{id}"
+@using PetGameForum.Util
 @model PetGameForum.Pages.PlayerModel
 
 @{
@@ -7,4 +8,8 @@
 
 <h1>@Model.User.UserName</h1>
 
-<
+<img src="@Model.User.Pfp()"/>
+
+<p>
+    @Model.User.Description.MapOrNOW("no description set") 
+</p>
