@@ -74,10 +74,10 @@
             <tr id="@post.Id" class="@(post.Deleted ? "post-deleted" : "")" style="@(post.Deleted ? "display: none" : "")">
                 <td class="post-user">
                     <h4><a href="@post.Author.Link()">@post.Author.Name</a></h4>
-                    <img src="@post.Author.Pfp" class="pfp"/>
+                    <img src="@post.Author.Pfp" class="pfp" alt="@post.Author.Name's profile picture"/>
                 </td>
                 <td style="position:relative;">
-                    <p>@post.CompiledContent</p>
+                    <p style="margin-right: 60px;">@Html.Raw(@post.CompiledContent)</p>
                     <p class="post-timestamp">Posted @post.Id.CreationTime.ToString("HH:mm, MMMM dd yyyy")</p>
                     <select style="top:10px; right:10px; width: 50px; position: absolute" name="..."
                             onchange="
@@ -109,10 +109,62 @@
 </table>
 
 @if (SignInManager.IsSignedIn(User)) {
-<p>New Post:</p>
-<form method="post" style="display: flex">
-    <textarea asp-for="UserPostInput" class="form-control" maxlength="@Model.MaxPostLength"></textarea>
-    <br/>
-    <input type="submit" value="Post" class="btn btn-primary" />
-</form>
+    <p>New Post:</p>
+    <table style="width: 100%">
+        <tr>
+            <td style="width: 0">
+                <button onclick="show_input()">
+                    write
+                </button>
+            </td>
+            <td style="width: 0">
+                <button onclick="show_preview()">
+                    preview
+                </button>
+            </td>
+            <td>
+                <!-- buffer :) -->
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <form method="post" style="display: flex">
+                    <textarea asp-for="UserPostInput" 
+                            class="form-control" maxlength="@Model.MaxPostLength" 
+                            id="post-input"></textarea>
+                    <div class="form-control" style="display: none" id="post-preview">Lorem ipsum</div>
+                    <input type="submit" value="Post" class="btn btn-primary"/>
+                </form>
+            </td>
+        </tr>
+    </table>
+    
+    <script>
+        let input = document.getElementById("post-input");
+        let preview = document.getElementById("post-preview");
+        function show_preview(){
+            preview.innerText = "loading preview...";
+            preview.style.removeProperty("display");
+            input.style.setProperty("display", "none");
+            
+            let markdown = input.value;
+            fetch("/MarkdownPreview", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/text',
+                    },
+                    body: markdown
+                })
+                .then(response => response.text())
+                .then(data => preview.innerHTML = data)
+                .catch(err => preview.innerText = "could not load preview: " + err);
+        }
+        
+        function show_input(){
+            input.style.removeProperty("display");
+            preview.style.setProperty("display", "none");
+        }
+    </script>
+} else {
+    <p>Log in to post something!</p>
 }

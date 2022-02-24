@@ -28,6 +28,7 @@ builder.Services.AddScoped<LogService>();
 builder.Services.AddScoped<ForumService>();
 builder.Services.AddScoped<RoleService>();
 builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<MarkDownService>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 

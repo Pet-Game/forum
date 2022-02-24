@@ -85,3 +85,17 @@ body {
   width: 100px;
   height: 100px;
 }
+
+.sitelen_pona{
+  font-family: linja_sike, fantasy;
+  display: contents;
+  font-size: 150%;
+}
+
+@font-face {
+  font-family: 'linja_sike';
+  src: url('/font/sitelen-pona/linja-sike-5-webfont.woff2') format('woff2'),
+    url('/font/sitelen-pona/linja-sike-5-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}

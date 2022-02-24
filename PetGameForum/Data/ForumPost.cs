@@ -52,6 +52,7 @@ public class ForumPostAuthor : ISupportInitialize {
 				Pfp = player.Pfp();
 				Name = player.UserName;
 			}
+			Version = CurrentVersion;
 		}
 	}
 }

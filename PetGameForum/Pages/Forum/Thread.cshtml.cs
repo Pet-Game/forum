@@ -13,6 +13,7 @@ public class ThreadModel : PageModel {
 	public readonly ForumService ForumService;
 	public readonly IConfiguration  Config;
 	public readonly RoleService RoleService;
+	private readonly MarkDownService mdService;
 	
 	public ForumThread Thread;
 	public List<ForumPost> Posts;
@@ -25,12 +26,13 @@ public class ThreadModel : PageModel {
 	[BindProperty]
 	public PostAction PostAction { get; set; }
 
-	public ThreadModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config, RoleService roleService) {
+	public ThreadModel(ForumService forumService, UserManager<User> userManager, IConfiguration  config, RoleService roleService, MarkDownService mdService) {
 		ForumService = forumService;
 		UserManager = userManager;
 		Config = config;
 		RoleService = roleService;
-		
+		this.mdService = mdService;
+
 		MaxPostLength = Config.GetSection("ForumSettings").GetValue<int>("MaxPostLength");
 	}
 	
@@ -65,18 +67,21 @@ public class ThreadModel : PageModel {
 			postIndex --; //show previous post
 			var previousPost = postIndex < Posts.Count && postIndex >= 0 ? Posts[postIndex] : null;
 			switch (PostAction.Type) {
-				case "delete":
-					if(!await RoleService.HasPermission(user, Permission.DeletePosts)) return Redirect(Request.Path); //todo: error comm
+				case "delete":{
+					if(!await RoleService.HasPermission(user, Permission.DeletePosts)) 
+						return Redirect(Request.Path); //todo: error comm
 					await ForumService.DeletePost(post, user);
-					break;
-				case "nuke": 
-					if(!await RoleService.HasPermission(user, Permission.NukePosts)) return Redirect(Request.Path); //todo: error comm
+				}break;
+				case "nuke": {
+					if(!await RoleService.HasPermission(user, Permission.NukePosts)) 
+						return Redirect(Request.Path); //todo: error comm
 					await ForumService.NukePost(post, user);
-					break;
-				case "restore":
-					if(!await RoleService.HasPermission(user, Permission.RestorePosts)) return Redirect(Request.Path); //todo: error comm
+				}break;
+				case "restore":{
+					if(!await RoleService.HasPermission(user, Permission.RestorePosts)) 
+						return Redirect(Request.Path); //todo: error comm
 					await ForumService.RestorePost(post, user);
-					break;
+				}break;
 			}
 			return Redirect(Request.Path + $"#{previousPost?.Id}");
 		}
@@ -106,8 +111,8 @@ public class ThreadModel : PageModel {
 	}
 	
 	private string CompilePost(string userInput) {
-		//ASPNET does all html encoding for us already
-		return userInput;
+		var html = mdService.ToHtml(userInput);
+		return html;
 	}
 }
 
